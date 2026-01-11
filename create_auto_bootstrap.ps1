@@ -6,8 +6,9 @@
     and Makefile for FAANG-level autonomous system bootstrap.
 #>
 
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Base = "C:\AI\repos\auto-bootstrap"
-Write-Host "🚀 Creating scaffold at $Base ..." -ForegroundColor Cyan
+Write-Information "🚀 Creating scaffold at $Base ..." -InformationAction Continue
 
 # ===============================
 # FOLDER STRUCTURE
@@ -37,7 +38,7 @@ foreach ($d in $Dirs) {
 echo 'Initializing Infinity-X Bootstrap...'
 mkdir -p /workspace/{repos,docs,automation,logs}
 echo '✅ Workspace ready'
-"@ | Set-Content "$Base/bootstrap/bootstrap.sh"
+"@ | Set-Content -Path "$Base/bootstrap/bootstrap.sh" -Encoding UTF8
 
 # ===============================
 # GOVERNANCE POLICY TEMPLATE
@@ -49,7 +50,7 @@ default allow = false
 allow {
     input.user == "admin"
 }
-"@ | Set-Content "$Base/governance/policies.rego"
+"@ | Set-Content -Path "$Base/governance/policies.rego" -Encoding UTF8
 
 # ===============================
 # GITHUB SYNC SCRIPT
@@ -61,7 +62,7 @@ cd "$REPO_DIR"
 git add .
 git commit -m "auto-sync: \$(date)"
 git push origin main
-"@ | Set-Content "$Base/automation/github_sync.sh"
+"@ | Set-Content -Path "$Base/automation/github_sync.sh" -Encoding UTF8
 
 # ===============================
 # GOOGLE CLOUD SYNC SCRIPT
@@ -74,7 +75,7 @@ IMAGE="infinityx/full-platform:latest"
 gcloud auth configure-docker \$REGION-docker.pkg.dev
 docker build -t \$REGION-docker.pkg.dev/\$PROJECT_ID/ai/\$IMAGE .
 docker push \$REGION-docker.pkg.dev/\$PROJECT_ID/ai/\$IMAGE
-"@ | Set-Content "$Base/automation/gcloud_sync.sh"
+"@ | Set-Content -Path "$Base/automation/gcloud_sync.sh" -Encoding UTF8
 
 # ===============================
 # CREDENTIAL SYNC (POWERSHELL)
@@ -83,8 +84,8 @@ docker push \$REGION-docker.pkg.dev/\$PROJECT_ID/ai/\$IMAGE
 # credentials_sync.ps1
 \$CredDir = "C:\Users\JARVIS\AppData\Local\InfinityXOne\CredentialManager\"
 if (-not (Test-Path \$CredDir)) { New-Item -ItemType Directory -Force -Path \$CredDir | Out-Null }
-Write-Host "🔐 Credential sync placeholder created at \$CredDir"
-"@ | Set-Content "$Base/automation/credentials_sync.ps1"
+Write-Information "🔐 Credential sync placeholder created at \$CredDir" -InformationAction Continue
+"@ | Set-Content -Path "$Base/automation/credentials_sync.ps1" -Encoding UTF8
 
 # ===============================
 # VS CODE SETTINGS SYNC
@@ -96,7 +97,7 @@ REPO_DIR="C:/AI/repos/auto-bootstrap/vscode_backup"
 mkdir -p "$REPO_DIR"
 cp "$CODE_DIR/settings.json" "$REPO_DIR/settings.json"
 echo '✅ VS Code settings backed up'
-"@ | Set-Content "$Base/automation/vscode_sync.sh"
+"@ | Set-Content -Path "$Base/automation/vscode_sync.sh" -Encoding UTF8
 
 # ===============================
 # DOCKER COMPOSE TEMPLATE
@@ -114,7 +115,7 @@ services:
       - ENABLE_VERTEX=true
       - ENABLE_GROQ=true
       - ENABLE_MCP=true
-"@ | Set-Content "$Base/docker-compose.yml"
+"@ | Set-Content -Path "$Base/docker-compose.yml" -Encoding UTF8
 
 # ===============================
 # MAKEFILE (LAUNCH SCRIPTS)
@@ -145,10 +146,10 @@ push:
 
 sync:
 	powershell ./automation/credentials_sync.ps1
-"@ | Set-Content "$Base/launch-scripts/Makefile"
+"@ | Set-Content -Path "$Base/launch-scripts/Makefile" -Encoding UTF8
 
 # ===============================
 # COMPLETION MESSAGE
 # ===============================
-Write-Host "`n✅ Scaffold complete in $Base" -ForegroundColor Green
-Write-Host "Contains bootstrap, governance, automation, and launch-scripts (Makefile)."
+Write-Information "`n✅ Scaffold complete in $Base" -InformationAction Continue
+Write-Information "Contains bootstrap, governance, automation, and launch-scripts (Makefile)." -InformationAction Continue

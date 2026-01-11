@@ -6,15 +6,16 @@
   Safe for all PowerShell versions (no Unicode or broken escaping).
 #>
 
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Base = "C:\AI\repos\auto-bootstrap"
 if (-not (Test-Path $Base)) {
-    Write-Host "Creating base directory at $Base" -ForegroundColor Yellow
+    Write-Information "Creating base directory at $Base" -InformationAction Continue
     New-Item -ItemType Directory -Force -Path $Base | Out-Null
 }
 
-Write-Host ""
-Write-Host "=== Validating Infinity-X Bootstrap at $Base ==="
-Write-Host "-------------------------------------------------------------"
+
+Write-Information "=== Validating Infinity-X Bootstrap at $Base ===" -InformationAction Continue
+Write-Information "-------------------------------------------------------------" -InformationAction Continue
 
 # --- Expected structure ---
 $Expected = @{
@@ -131,14 +132,14 @@ $Empty   = @()
 foreach ($folder in $Expected.Keys) {
     $fullPath = Join-Path $Base $folder
     if (-not (Test-Path $fullPath)) {
-        Write-Host "[!] Missing Folder: $folder" -ForegroundColor Red
+        Write-Information "[!] Missing Folder: $folder" -InformationAction Continue
         New-Item -ItemType Directory -Force -Path $fullPath | Out-Null
     }
 
     foreach ($file in $Expected[$folder]) {
         $target = Join-Path $fullPath $file
         if (-not (Test-Path $target)) {
-            Write-Host "[Auto-Fix] Creating missing file: $target" -ForegroundColor Yellow
+            Write-Information "[Auto-Fix] Creating missing file: $target" -InformationAction Continue
             if ($Templates.ContainsKey($file)) {
                 Set-Content -Path $target -Value $Templates[$file] -Encoding UTF8
             } else {
@@ -146,7 +147,7 @@ foreach ($folder in $Expected.Keys) {
             }
             $Missing += $target
         } elseif ((Get-Item $target).Length -eq 0) {
-            Write-Host "[!] Empty file: $target" -ForegroundColor DarkYellow
+            Write-Information "[!] Empty file: $target" -InformationAction Continue
             $Empty += $target
         } else {
             $rel = $target.Replace("$Base\", "")
@@ -158,14 +159,14 @@ foreach ($folder in $Expected.Keys) {
                 "Enterprise"  { "Green" }
                 default       { "Gray" }
             }
-            Write-Host ("[{0}] {1}" -f $type, $rel) -ForegroundColor $color
+            Write-Information ("[{0}] {1}" -f $type, $rel) -InformationAction Continue
         }
     }
 }
 
 # --- Dependency check ---
-Write-Host ""
-Write-Host "Checking dependencies..."
+
+Write-Information "Checking dependencies..." -InformationAction Continue
 
 $deps = @{
     "python" = (Get-Command python -ErrorAction SilentlyContinue)
@@ -175,32 +176,32 @@ $deps = @{
 
 foreach ($k in $deps.Keys) {
     if ($deps[$k]) {
-        Write-Host ("OK: {0} found at {1}" -f $k, $deps[$k].Source) -ForegroundColor Green
+        Write-Information ("OK: {0} found at {1}" -f $k, $deps[$k].Source) -InformationAction Continue
     } else {
-        Write-Host ("MISSING: {0} not found in PATH" -f $k) -ForegroundColor Red
+        Write-Information ("MISSING: {0} not found in PATH" -f $k) -InformationAction Continue
     }
 }
 
 # --- Summary ---
-Write-Host ""
-Write-Host "=== Validation Summary ==="
-Write-Host ("MVP components:        {0}" -f (($Class.Values | Where-Object {$_ -eq 'MVP'}).Count)) -ForegroundColor Yellow
-Write-Host ("Production components: {0}" -f (($Class.Values | Where-Object {$_ -eq 'Production'}).Count)) -ForegroundColor Cyan
-Write-Host ("Enterprise components: {0}" -f (($Class.Values | Where-Object {$_ -eq 'Enterprise'}).Count)) -ForegroundColor Green
-Write-Host "-------------------------------------------------------------"
+
+Write-Information "=== Validation Summary ===" -InformationAction Continue
+Write-Information ("MVP components:        {0}" -f (($Class.Values | Where-Object {$_ -eq 'MVP'}).Count)) -InformationAction Continue
+Write-Information ("Production components: {0}" -f (($Class.Values | Where-Object {$_ -eq 'Production'}).Count)) -InformationAction Continue
+Write-Information ("Enterprise components: {0}" -f (($Class.Values | Where-Object {$_ -eq 'Enterprise'}).Count)) -InformationAction Continue
+Write-Information "-------------------------------------------------------------" -InformationAction Continue
 
 if ($Missing.Count -gt 0 -or $Empty.Count -gt 0) {
-    Write-Host "Some issues were fixed or found." -ForegroundColor Yellow
+    Write-Information "Some issues were fixed or found." -InformationAction Continue
     if ($Missing.Count -gt 0) {
-        Write-Host "  Created:" -ForegroundColor Green
-        $Missing | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkGreen }
+        Write-Information "  Created:" -InformationAction Continue
+        $Missing | ForEach-Object { Write-Information "   $_" -InformationAction Continue }
     }
     if ($Empty.Count -gt 0) {
-        Write-Host "  Empty files:" -ForegroundColor DarkYellow
-        $Empty | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkYellow }
+        Write-Information "  Empty files:" -InformationAction Continue
+        $Empty | ForEach-Object { Write-Information "   $_" -InformationAction Continue }
     }
-    Write-Host "`nAuto-Heal Completed. Validation PASSED with repairs." -ForegroundColor Green
+    Write-Information "`nAuto-Heal Completed. Validation PASSED with repairs." -InformationAction Continue
 } else {
-    Write-Host "Validation PASSED. Structure fully healthy." -ForegroundColor Green
+    Write-Information "Validation PASSED. Structure fully healthy." -InformationAction Continue
 }
 

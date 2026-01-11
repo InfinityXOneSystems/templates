@@ -7,22 +7,23 @@
 #>
 
 # --- Configuration -----------------------------------------------------
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Base             = "C:\AI\repos\auto-bootstrap"
 $RepoName         = "InfinityXOneSystems/auto-templates"
 $GCPProjectID     = "infinity-x-one-systems"
-$GCPProjectNumber = "896380409704"
+#$GCPProjectNumber = "896380409704" # Unused variable
 $Region           = "us-east1"
 $ImageName        = "infinityx/orchestrator:latest"
 $ArtifactRegistry = "$Region-docker.pkg.dev/$GCPProjectID/ai/orchestrator:latest"
 
-Write-Host "`n=== Phase-3: Enterprise Bootstrap for $RepoName ===" -ForegroundColor Cyan
+Write-Information "`n=== Phase-3: Enterprise Bootstrap for $RepoName ===" -InformationAction Continue
 
 # --- 1. Verify base scaffold exists -----------------------------------
 if (-not (Test-Path $Base)) {
-    Write-Host "❌ $Base not found — please run Phase 1–2 first." -ForegroundColor Red
+    Write-Information "❌ $Base not found — please run Phase 1–2 first." -InformationAction Continue
     exit 1
 }
-Write-Host "✅ Scaffold detected at $Base"
+Write-Information "✅ Scaffold detected at $Base" -InformationAction Continue
 
 # --- 2. Create Dockerfile ---------------------------------------------
 $Dockerfile = @'
@@ -34,27 +35,27 @@ EXPOSE 8080
 CMD ["python", "orchestrator/main.py"]
 '@
 Set-Content -Path "$Base\Dockerfile" -Value $Dockerfile -Encoding UTF8
-Write-Host "📦 Dockerfile ready" -ForegroundColor Green
+Write-Information "📦 Dockerfile ready" -InformationAction Continue
 
 # --- 3. Build and tag image -------------------------------------------
 Set-Location $Base
-Write-Host "`nBuilding local Docker image $ImageName..."
-docker build -t $ImageName . | Write-Host
-Write-Host "✅ Build complete"
+Write-Information "`nBuilding local Docker image $ImageName..." -InformationAction Continue
+docker build -t $ImageName . | Write-Information -InformationAction Continue
+Write-Information "✅ Build complete" -InformationAction Continue
 
 # --- 4. Tag + Push to Artifact Registry -------------------------------
-Write-Host "`nTagging and pushing to GCP Artifact Registry..."
+Write-Information "`nTagging and pushing to GCP Artifact Registry..." -InformationAction Continue
 try {
     gcloud auth configure-docker "$Region-docker.pkg.dev" -q | Out-Null
     docker tag $ImageName $ArtifactRegistry
     docker push $ArtifactRegistry
-    Write-Host "✅ Pushed to $ArtifactRegistry" -ForegroundColor Green
+    Write-Information "✅ Pushed to $ArtifactRegistry" -InformationAction Continue
 } catch {
-    Write-Host "⚠️  Push skipped (verify gcloud auth)" -ForegroundColor Yellow
+    Write-Information "⚠️  Push skipped (verify gcloud auth)" -InformationAction Continue
 }
 
 # --- 5. GitHub sync ----------------------------------------------------
-Write-Host "`nSyncing GitHub repository..."
+Write-Information "`nSyncing GitHub repository..." -InformationAction Continue
 $GitHubScript = @'
 #!/usr/bin/env bash
 cd /app
@@ -63,15 +64,15 @@ git commit -m "enterprise-auto-sync: $(date)"
 git push origin main
 '@
 Set-Content -Path "$Base\automation\github_sync.sh" -Value $GitHubScript -Encoding UTF8
-Write-Host "🔄 GitHub sync script updated" -ForegroundColor Cyan
+Write-Information "🔄 GitHub sync script updated" -InformationAction Continue
 
 # --- 6. Credential sync ------------------------------------------------
-Write-Host "`nEnsuring local credentials are up to date..."
+Write-Information "`nEnsuring local credentials are up to date..." -InformationAction Continue
 $CredDir = "C:\Users\JARVIS\AppData\Local\InfinityXOne\CredentialManager"
 if (-not (Test-Path $CredDir)) {
     New-Item -ItemType Directory -Force -Path $CredDir | Out-Null
 }
-Write-Host "🔐 Credentials synced from $CredDir" -ForegroundColor Green
+Write-Information "🔐 Credentials synced from $CredDir" -InformationAction Continue
 
 # --- 7. Vertex / Groq / OpenAI config placeholders --------------------
 $AIConfig = @'
@@ -80,7 +81,7 @@ GROQ_ENABLED=true
 OPENAI_ENABLED=true
 '@
 Set-Content -Path "$Base\.env" -Value $AIConfig -Encoding UTF8
-Write-Host "🤖 AI service placeholders created (.env)" -ForegroundColor Cyan
+Write-Information "🤖 AI service placeholders created (.env)" -InformationAction Continue
 
 # --- 8. Kubernetes templates (on deck) --------------------------------
 $K8sDir = "$Base\k8s"
@@ -123,16 +124,16 @@ spec:
       targetPort: 8080
 '@
 Set-Content -Path "$K8sDir\deployment.yml" -Value $DeploymentYml -Encoding UTF8
-Write-Host "📄 Kubernetes template created (not applied)" -ForegroundColor Gray
+Write-Information "📄 Kubernetes template created (not applied)" -InformationAction Continue
 
 # --- 9. Local verification --------------------------------------------
-Write-Host "`nValidating image..."
+Write-Information "`nValidating image..." -InformationAction Continue
 docker images | Where-Object { $_.Repository -match "infinityx" } | Format-Table
-Write-Host "`nValidation complete — container available locally and in Artifact Registry."
+Write-Information "`nValidation complete — container available locally and in Artifact Registry." -InformationAction Continue
 
-Write-Host "-------------------------------------------------------------"
-Write-Host "✅ Phase-3 Enterprise Bootstrap finished successfully."
-Write-Host "To run locally: docker run -p 8080:8080 $ImageName"
-Write-Host "To deploy later: kubectl apply -f k8s\deployment.yml"
-Write-Host "-------------------------------------------------------------"
+Write-Information "-------------------------------------------------------------" -InformationAction Continue
+Write-Information "✅ Phase-3 Enterprise Bootstrap finished successfully." -InformationAction Continue
+Write-Information "To run locally: docker run -p 8080:8080 $ImageName" -InformationAction Continue
+Write-Information "To deploy later: kubectl apply -f k8s\deployment.yml" -InformationAction Continue
+Write-Information "-------------------------------------------------------------" -InformationAction Continue
 

@@ -3,6 +3,7 @@
 # AUTO-HEAL • SMOKE TEST • ALERTING • GRACEFUL FAIL
 # ============================================================
 
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = "Continue"
 $RESULTS = @()
 $ORCH_URL = "https://orchestrator-896380409704.us-east1.run.app"
@@ -20,36 +21,36 @@ function Log($system,$status,$detail) {
 function Smoke-Test {
   try {
     Invoke-RestMethod "$ORCH_URL/health" -TimeoutSec 10 | Out-Null
-    Log "SmokeTest" "PASS" "Orchestrator reachable"
+    Log -system "SmokeTest" -status "PASS" -detail "Orchestrator reachable"
   } catch {
-    Log "SmokeTest" "FAIL" "Orchestrator unreachable"
+    Log -system "SmokeTest" -status "FAIL" -detail "Orchestrator unreachable"
   }
 }
 
 function Validate-Orchestrator {
   try {
     Invoke-RestMethod "$ORCH_URL/heartbeat" -Method POST -TimeoutSec 10 | Out-Null
-    Log "Orchestrator" "PASS" "Heartbeat executed"
+    Log -system "Orchestrator" -status "PASS" -detail "Heartbeat executed"
   } catch {
-    Log "Orchestrator" "FAIL" "Heartbeat failed"
+    Log -system "Orchestrator" -status "FAIL" -detail "Heartbeat failed"
   }
 }
 
 function Validate-GitHub {
   try {
     gh auth status | Out-Null
-    Log "GitHub" "PASS" "gh authenticated"
+    Log -system "GitHub" -status "PASS" -detail "gh authenticated"
   } catch {
-    Log "GitHub" "FAIL" "gh auth failure"
+    Log -system "GitHub" -status "FAIL" -detail "gh auth failure"
   }
 }
 
 function Validate-GCP {
   try {
     gcloud run services list --region us-east1 | Out-Null
-    Log "GCP" "PASS" "Cloud Run accessible"
+    Log -system "GCP" -status "PASS" -detail "Cloud Run accessible"
   } catch {
-    Log "GCP" "FAIL" "GCP access failure"
+    Log -system "GCP" -status "FAIL" -detail "GCP access failure"
   }
 }
 

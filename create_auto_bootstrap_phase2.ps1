@@ -6,13 +6,14 @@
     and agent registry inside Phase 1 auto-bootstrap folder.
 #>
 
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Base = "C:\AI\repos\auto-bootstrap"
 if (-not (Test-Path $Base)) {
-    Write-Host "❌ Phase 1 folder not found at $Base" -ForegroundColor Red
+    Write-Information "❌ Phase 1 folder not found at $Base" -InformationAction Continue
     exit
 }
 
-Write-Host "🚀 Expanding Phase 2 structure in $Base ..." -ForegroundColor Cyan
+Write-Information "🚀 Expanding Phase 2 structure in $Base ..." -InformationAction Continue
 
 # Create folders
 $Dirs = @("orchestrator","orchestrator\adapters","schemas","agents\registry")
@@ -36,7 +37,7 @@ def health(): return {"status":"ok"}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)
-"@ | Set-Content "$Base/orchestrator/main.py"
+"@ | Set-Content -Path "$Base/orchestrator/main.py" -Encoding UTF8
 
 # Core router
 @"
@@ -56,7 +57,7 @@ async def execute(task: dict):
 async def schedule_task(task: dict):
     job_id = scheduler.enqueue(task)
     return {"scheduled": job_id}
-"@ | Set-Content "$Base/orchestrator/core.py"
+"@ | Set-Content -Path "$Base/orchestrator/core.py" -Encoding UTF8
 
 # Scheduler
 @"
@@ -72,7 +73,7 @@ def enqueue(task):
 async def run(task):
     await asyncio.sleep(0.1)
     print(f"🧠 Executed task: {task}")
-"@ | Set-Content "$Base/orchestrator/scheduler.py"
+"@ | Set-Content -Path "$Base/orchestrator/scheduler.py" -Encoding UTF8
 
 # Adapters (Vertex/Groq/MCP)
 $Adapters = @{
@@ -80,7 +81,7 @@ $Adapters = @{
   "groq.py"   = "def run(task): return {'engine':'groq','ok':True}"
   "mcp.py"    = "def run(task): return {'engine':'mcp','ok':True}"
 }
-foreach ($k in $Adapters.Keys) { $Adapters[$k] | Set-Content "$Base/orchestrator/adapters/$k" }
+foreach ($k in $Adapters.Keys) { $Adapters[$k] | Set-Content -Path "$Base/orchestrator/adapters/$k" -Encoding UTF8 }
 
 # Agent registry
 @"
@@ -91,7 +92,7 @@ foreach ($k in $Adapters.Keys) { $Adapters[$k] | Set-Content "$Base/orchestrator
   {"name":"security","entry":"agents/security/main.py"},
   {"name":"governance","entry":"agents/governance/main.py"}
 ]
-"@ | Set-Content "$Base/agents/registry/agents.json"
+"@ | Set-Content -Path "$Base/agents/registry/agents.json" -Encoding UTF8
 
 # Task schema
 @"
@@ -107,14 +108,14 @@ foreach ($k in $Adapters.Keys) { $Adapters[$k] | Set-Content "$Base/orchestrator
   },
   "required":["agent","model"]
 }
-"@ | Set-Content "$Base/schemas/task_schema.json"
+"@ | Set-Content -Path "$Base/schemas/task_schema.json" -Encoding UTF8
 
 # Python requirements
 @"
 fastapi
 uvicorn
 pydantic
-"@ | Set-Content "$Base/requirements.txt"
+"@ | Set-Content -Path "$Base/requirements.txt" -Encoding UTF8
 
-Write-Host "`n✅ Phase 2 Orchestrator / Automation Kernel scaffold created." -ForegroundColor Green
-Write-Host "  Next: cd $Base and docker build -t infinityx/orchestrator ."
+Write-Information "`n✅ Phase 2 Orchestrator / Automation Kernel scaffold created." -InformationAction Continue
+Write-Information "  Next: cd $Base and docker build -t infinityx/orchestrator ." -InformationAction Continue

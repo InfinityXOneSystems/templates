@@ -4,6 +4,7 @@
 )
 
 Set-StrictMode -Version Latest
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = "Continue"
 
 $ROOT = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -11,8 +12,8 @@ Set-Location $ROOT
 
 $STATE_DIR      = "$ROOT\.infinity"
 $REPORT_DIR     = "$STATE_DIR\reports"
-$QUARANTINE_DIR = "$STATE_DIR\quarantine"
-$LOG_FILE       = "$STATE_DIR\validator.log"
+$QUARANTINE_DIR = "$STATE_DIR\\quarantine"
+#$LOG_FILE       = "$STATE_DIR\\validator.log" # Unused variable
 $TIMESTAMP      = Get-Date -Format "yyyyMMdd-HHmmss"
 
 New-Item -ItemType Directory -Force $STATE_DIR      | Out-Null
